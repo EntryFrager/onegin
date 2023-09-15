@@ -7,9 +7,9 @@ CFLAGS = -c -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 	-Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing   \
 	-Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 
-INCLUDES = onegin_input_print.h onegin_function.h error.h
+INCLUDES = input_print.h function.h error.h
 
-SOURCES = onegin.cpp onegin_input_print.cpp error.cpp sort_function.cpp str_func.cpp size_function.cpp
+SOURCES = main.cpp input_print.cpp  sort_function.cpp str_func.cpp error.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -24,4 +24,4 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	-rm *.o
+	rm -rf *.o onegin

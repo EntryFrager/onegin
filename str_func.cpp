@@ -1,35 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
-#include "onegin_function.h"
+#include "function.h"
 #include "error.h"
 
 const int SIZE = 1000;
 
-char** split_lines (char *data, const size_t size)
+static size_t number_of_lines (const char *data, const size_t size);
+
+void split_lines (TEXT *data)
 {   
     my_assert (data != NULL);
 
-    char **p_buf = (char **) calloc (SIZE, sizeof(char *));
+    data->n_lines =  number_of_lines (data->buf, data->size_file);
 
-    *p_buf = data;
+    data->lines = (LINE *) calloc (data->n_lines, sizeof(LINE));
+    my_assert (data->lines != NULL);
 
+    data->text = (char **) calloc (SIZE, sizeof(char *));
+    my_assert (data->text != NULL);
+
+    *data->text = data->buf;
+    (data->lines)[0].str = data->buf;
+    (data->lines)[0].size_str = 1;
     int j = 1;
 
-    for (size_t i = 0; i < size; i++)
+    for (size_t id = 1; id <= data->size_file; id++)
     {
-        if (*(data + i) == '\n')
+        if (data->buf[id] == '\n' && data->buf[id - 1] != '\n')
         {
-            *(p_buf + j) = data + (i + 1);
-
-            *(data + i) = '\0';
+            *(data->buf + id) = '\0';
+            
+            (data->lines)[j].str = data->buf + (id + 1);
 
             j++;
         }
-    }
-
-    return p_buf;
+        else
+        {
+            (data->lines)[j - 1].size_str++;
+        }
+    }   
 }
 
 int string_cmp (const void *s1, const void *s2)
@@ -37,25 +49,28 @@ int string_cmp (const void *s1, const void *s2)
     my_assert (s1 != NULL);
     my_assert (s2 != NULL);
 
-    const char *s1_new = (const char *) s1;
-    const char *s2_new = (const char *) s2;
+    LINE s1_new = *((LINE *) s1);
+    LINE s2_new = *((LINE *) s2);
 
-    size_t s1_len = strlen (s1_new);
-    size_t s2_len = strlen (s2_new);
+    size_t i_1 = 0;
+    size_t i_2 = 0;
 
-    while (65 >= *s1_new || (90 < *s1_new && *s1_new < 97) || *s1_new > 122)
+    while (!isalpha (*(s1_new.str)))
     {
-        s1_new++;
-        s1_len--;
+        s1_new.str++;
     }
 
-    while (65 >= *s2_new || (90 < *s2_new && *s2_new < 97) || *s2_new > 122)
+    while (!isalpha (*(s2_new.str)))
     {
-        s2_new++;
-        s2_len--;
+        s2_new.str++;
     }
 
-    return strcmp (s1_new, s2_new);
+    if (s1_new.size_str < s2_new.size_str)
+    {
+        return strncmp (s1_new.str, s2_new.str, s1_new.size_str);
+    }
+
+    return strncmp (s1_new.str, s2_new.str, s2_new.size_str);
 }
 
 int string_cmp_reverse (const void *s1, const void *s2)
@@ -63,27 +78,54 @@ int string_cmp_reverse (const void *s1, const void *s2)
     my_assert (s1 != NULL);
     my_assert (s2 != NULL);
 
-    const char *s1_new = (const char *) s1;
-    const char *s2_new = (const char *) s2;
+    LINE s1_new = *(LINE *) s1;
+    LINE s2_new = *(LINE *) s2;
 
-    size_t s1_len = strlen (s1_new);
-    size_t s2_len = strlen (s2_new);
-
-    while (65 >= *(s1_new + s1_len) || (90 < *(s1_new + s1_len) && *(s1_new + s1_len) < 97) || *(s1_new + s1_len) > 122)
+    while (!isalpha (*(s1_new.str + s1_new.size_str)))
     {
-        s1_len--;
+        s1_new.size_str--;
     }
 
-    while (65 >= *(s2_new + s2_len) || (90 < *(s2_new + s2_len) && *(s2_new + s2_len) < 97) || *(s2_new + s2_len) > 122)
+    while (!isalpha (*(s2_new.str + s2_new.size_str)))
     {
-        s2_len--;
+        s2_new.size_str--;
     }
 
-    while (strcmp((s1_new + s1_len), (s2_new + s2_len)) == 0)
+    while (*(s1_new.str + s1_new.size_str) == *(s2_new.str + s2_new.size_str))
     {
-        s1_len--;
-        s2_len--;
+        s1_new.size_str--;
+        s2_new.size_str--;
     }
 
-    return strcmp((s1_new + s1_len), (s2_new + s2_len));
+    if (s1_new.size_str == 0 && s2_new.size_str == 0)
+    {
+        return 0;
+    }
+
+    return *(s1_new.str + s1_new.size_str) - *(s2_new.str + s2_new.size_str);
+}
+
+static size_t number_of_lines (const char *data, const size_t size)
+{
+    my_assert (data != NULL);
+
+    size_t n = 1;
+
+    for (size_t i = 1; i < size; i++)
+    {
+        if (data[i] == '\n' && data[i - 1] != '\n')
+        {
+            n++;
+        }
+    }
+
+    return n;
+}
+
+void free_ptr (TEXT *data)
+{
+    my_assert (data != NULL);
+
+    free (data->buf);
+    free (data->text);
 }
