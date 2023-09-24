@@ -16,6 +16,8 @@ int main ()
         fprintf(stderr, "%s", my_strerr (code_error));
     }
 
+    data.file_name_print = "onegin_print.txt";
+
     data.fp_print = fopen (data.file_name_print, "r+");
 
     if (data.fp_print == NULL)
@@ -23,18 +25,12 @@ int main ()
         fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
     }
 
-    //Первый вид сортировки - сортирует в алфавитном порядке по первым буквам
-
-    qsort (data.lines, data.n_lines - 1, sizeof(LINE *), string_cmp);
+    my_qsort (data.lines, 0, data.n_lines - 1, string_cmp);
     print_sort_text (&data);
 
-    //Второй вид сортировки - сортирует в алфавитном порядке, но по последним буквам
-
-    bubble_sort (&data, string_cmp_reverse);
+    qsort (data.lines, data.n_lines, sizeof (LINE), string_cmp);
     print_sort_text (&data);
-
-    //Обычный вывод - без сортировки, дефолтный текст из файла
-
+    
     print_text (&data);
 
     if (fclose (data.fp_print) != 0)

@@ -7,14 +7,16 @@
 
 int input_text (TEXT* data)
 {
+    my_assert (data != NULL);
+
+    data->file_name_input = (const char *) "Onegin.txt";
+
     data->fp_input = fopen (data->file_name_input, "rb");
 
     if (data->fp_input == NULL)
     {
         return ERR_FOPEN;
     }
-
-    my_assert (data != NULL);
 
     data->size_file = get_file_size (data->fp_input);
 
@@ -48,7 +50,7 @@ void print_sort_text (TEXT* data)
     {
         my_assert (data->lines[i].str != NULL);
 
-        fprintf (data->fp_print, "%s", data->lines[i].str);
+        fprintf (data->fp_print, "%s\n", data->lines[i].str);
     }
 
     fprintf (data->fp_print, "\n\n\n");
@@ -56,18 +58,20 @@ void print_sort_text (TEXT* data)
 
 void print_text (TEXT *data)
 {
-    size_t t = 0;
+    my_assert (data != NULL);
+
+    size_t len = 0;
 
     for (size_t i = 0; i <= data->size_file; i++)
     {
         if (*data->buf++ == '\0')
         {
-            fprintf (data->fp_print, "%s", data->buf - t - 1);
-            t = 0;
+            fprintf (data->fp_print, "%s\n", data->buf - len - 1);
+            len = 0;
         }
         else 
         {
-            t++;
+            len++;
         }
     }
 }
@@ -76,7 +80,8 @@ size_t get_file_size (FILE *stream)
 {
     my_assert (stream != NULL);
 
-    fseek (stream, 0L, SEEK_END);
+    size_t start = ftell (stream);
+    fseek (stream, start, SEEK_END);
     size_t size_file = ftell (stream);
     rewind (stream);
 

@@ -19,10 +19,6 @@ void split_lines (TEXT *data)
     data->lines = (LINE *) calloc (data->n_lines, sizeof(LINE));
     my_assert (data->lines != NULL);
 
-    data->text = (char **) calloc (SIZE, sizeof(char *));
-    my_assert (data->text != NULL);
-
-    *data->text = data->buf;
     (data->lines)[0].str = data->buf;
     (data->lines)[0].size_str = 1;
     int j = 1;
@@ -52,9 +48,6 @@ int string_cmp (const void *s1, const void *s2)
     LINE s1_new = *((LINE *) s1);
     LINE s2_new = *((LINE *) s2);
 
-    size_t i_1 = 0;
-    size_t i_2 = 0;
-
     while (!isalpha (*(s1_new.str)))
     {
         s1_new.str++;
@@ -65,12 +58,7 @@ int string_cmp (const void *s1, const void *s2)
         s2_new.str++;
     }
 
-    if (s1_new.size_str < s2_new.size_str)
-    {
-        return strncmp (s1_new.str, s2_new.str, s1_new.size_str);
-    }
-
-    return strncmp (s1_new.str, s2_new.str, s2_new.size_str);
+    return strcmp (s1_new.str, s2_new.str);
 }
 
 int string_cmp_reverse (const void *s1, const void *s2)
@@ -78,31 +66,34 @@ int string_cmp_reverse (const void *s1, const void *s2)
     my_assert (s1 != NULL);
     my_assert (s2 != NULL);
 
-    LINE s1_new = *(LINE *) s1;
-    LINE s2_new = *(LINE *) s2;
+    LINE *s1_new = (LINE *) s1;
+    LINE *s2_new = (LINE *) s2;
 
-    while (!isalpha (*(s1_new.str + s1_new.size_str)))
+    size_t size_s1 = s1_new->size_str - 1;
+    size_t size_s2 = s2_new->size_str - 1;
+
+    while (!isalpha (*(s1_new->str + size_s1)))
     {
-        s1_new.size_str--;
+        size_s1--;
     }
 
-    while (!isalpha (*(s2_new.str + s2_new.size_str)))
+    while (!isalpha (*(s2_new->str + size_s2)))
     {
-        s2_new.size_str--;
+        size_s2--;
     }
 
-    while (*(s1_new.str + s1_new.size_str) == *(s2_new.str + s2_new.size_str))
+    while (size_s1 > 0 && size_s2 > 0 && *(s1_new->str + size_s1) == *(s2_new->str + size_s2))
     {
-        s1_new.size_str--;
-        s2_new.size_str--;
+        size_s1--;
+        size_s2--;
     }
 
-    if (s1_new.size_str == 0 && s2_new.size_str == 0)
+    if (size_s1 == 0 || size_s2 == 0)
     {
         return 0;
     }
 
-    return *(s1_new.str + s1_new.size_str) - *(s2_new.str + s2_new.size_str);
+    return *(s1_new->str + size_s1) - *(s2_new->str + size_s2);
 }
 
 static size_t number_of_lines (const char *data, const size_t size)
@@ -127,5 +118,18 @@ void free_ptr (TEXT *data)
     my_assert (data != NULL);
 
     free (data->buf);
-    free (data->text);
+
+    for (size_t i = 0; i < data->n_lines; i++)
+    {
+        data->lines[i].str = NULL;
+    }
+
+    free (data->lines);
+
+    data->buf = NULL;
+    data->lines = NULL;
+    data->file_name_input = NULL;
+    data->file_name_print = NULL;
+    data->fp_input = NULL;
+    data->fp_print = NULL;
 }

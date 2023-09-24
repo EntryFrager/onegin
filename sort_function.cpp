@@ -6,8 +6,9 @@
 #include "input_print.h"
 #include "error.h"
 
-static void swap (LINE *lines, size_t index_1, size_t index_2);
+static void swap (void *text_1, void *text_2);
 
+#if 0
 char** bubble_sort (TEXT *data, int (*compare_func) (const void *str_1, const void *str_2))
 {
     my_assert (data != NULL);
@@ -24,29 +25,61 @@ char** bubble_sort (TEXT *data, int (*compare_func) (const void *str_1, const vo
     }
 }
 
-/*void my_qsort (void *text, size_t n_lines, size_t size_elements, int (*compare_func) (const void *str_1, const void *str_2))
-{
-    my_assert (text != NULL);
+#endif
 
-    size_t left = 0;
-    size_t right = n_lines - 1;
+void my_qsort (void *line_1, size_t first, size_t last, int (*compare_func) (const void *str_1, const void *str_2))
+{
+    my_assert (line_1 != NULL);
+
+    LINE *lines = (LINE *) line_1;
+
+    if (first >= last)
+    {
+        return;
+    }
+
+    size_t left = first;
+    size_t right = last;
 
     size_t pivot = (left + right) / 2;
 
-    while (left++ <= pivot && right-- >= pivot)
+    while (left <= right)
     {
-        if (left + 1 < pivot
+        while (compare_func (&lines[left], &lines[pivot]) < 0 && left <= right)
+        {
+            left++;
+        }
+        while (compare_func (&lines[pivot], &lines[right]) < 0 && right >= 0)
+        {
+            right--;
+        }
+
+        if (left >= right)
+        {
+            break;
+        }
+        
+        swap (&lines[left], &lines[right]);
+        left++;
+        right--;
     }
     
-    my_qsort ();
-}*/
+    my_qsort (lines, first, right, compare_func);
 
-static void swap (LINE *lines, size_t index_1, size_t index_2)
+    my_qsort (lines, left + 1, last, compare_func);
+}
+
+static void swap (void *text_1, void *text_2)
 {
-    my_assert (lines != NULL);
+    my_assert (text_1 != NULL);
+    my_assert (text_2 != NULL);
 
-    LINE lines_tmp= lines[index_1];
 
-    lines[index_1] = lines[index_2];
-    lines[index_2] = lines_tmp;
+    LINE *str_1 = (LINE *) text_1;
+    LINE *str_2 = (LINE *) text_2;
+
+    LINE lines_tmp = *str_1;
+
+    *str_1 = *str_2;
+    *str_2 = lines_tmp;
 }
